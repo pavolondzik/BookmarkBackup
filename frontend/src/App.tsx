@@ -9,6 +9,7 @@ import {
 } from "./api/client";
 import { AutoResizeTextarea } from "./components/AutoResizeTextarea";
 import { BookmarkDetailIcon } from "./components/BookmarkDetailIcon";
+import { FolderChevron } from "./components/FolderChevron";
 import { BookmarkTree } from "./components/BookmarkTree";
 import { ThemeSwitcher } from "./theme/ThemeSwitcher";
 import type {
@@ -184,11 +185,27 @@ export default function App() {
     <div className="flex h-screen flex-col">
       <header className="sticky top-0 z-10 border-b border-border bg-surface/90 backdrop-blur-md">
         <div className="flex items-end justify-between gap-4 px-4 py-3">
-          <div>
-            <h1 className="m-0 text-base font-semibold">Bookmark Backup</h1>
-            <span className="mt-0.5 block text-xs text-muted">
-              {users.find((u) => u.id === userId)?.email ?? "—"}
-            </span>
+          <div className="flex items-end gap-2">
+            <a
+              href="https://github.com/pavolondzik/BookmarkBackup"
+              className="mb-0.5 inline-flex shrink-0 text-muted transition-colors hover:text-foreground"
+              aria-label="GitHub"
+            >
+              <svg
+                className="size-9"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+              </svg>
+            </a>
+            <div>
+              <h1 className="m-0 text-base font-semibold">Bookmark Backup</h1>
+              <span className="mt-0.5 block text-xs text-muted">
+                {users.find((u) => u.id === userId)?.email ?? "—"}
+              </span>
+            </div>
           </div>
           <div className="flex items-end gap-3">
             <div className="flex items-end gap-3">
@@ -363,9 +380,7 @@ export default function App() {
                 aria-controls="import-section-content"
                 onClick={() => setImportExpanded((open) => !open)}
               >
-                <span className="inline-block w-3 text-center leading-none">
-                  {importExpanded ? "▼" : "▶"}
-                </span>
+                <FolderChevron expanded={importExpanded} />
               </button>
             </div>
             {importExpanded && (
@@ -435,9 +450,6 @@ export default function App() {
                 <p className="mt-3 text-sm text-muted">
                   Tip: the backend supports Chromium JSON `Bookmarks` files and
                   Netscape HTML exports.
-                </p>
-                <p className="mt-3 text-sm text-muted">
-                  About: Bookmarks are deduplicated globally by normalized URL.
                 </p>
               </div>
             )}

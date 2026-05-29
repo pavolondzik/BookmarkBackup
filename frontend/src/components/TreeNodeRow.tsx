@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
+import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { DragItem, DropTarget, TreeNode } from "../types";
+import { FolderChevron } from "./FolderChevron";
 
 type Props = {
   node: TreeNode;
@@ -71,72 +72,83 @@ export function TreeNodeRow({
     paddingLeft: `${indentPx}px`,
   };
   const rowClass = [
-    "group flex cursor-grab select-none items-center gap-1.5 rounded-md py-1 pr-1",
-    "hover:bg-foreground/5",
-    selected && "bg-accent/20",
-    folderOver && "outline outline-1 outline-accent",
+    "group flex cursor-grab select-none items-center gap-1.5 py-1 pr-1",
+    folderOver && "rounded-md outline outline-1 outline-accent",
     !isFolder && "text-foreground/85",
   ]
     .filter(Boolean)
     .join(" ");
+  const labelClass = ["tree-row-label", selected && "is-selected"]
+    .filter(Boolean)
+    .join(" ");
   const insertLineClass =
     "pointer-events-none relative z-20 my-0.5 mr-3 h-1 rounded-sm bg-accent shadow-[0_0_8px_var(--app-insert-glow)]";
+
+  const toggleFolder = (event: MouseEvent | KeyboardEvent) => {
+    event.stopPropagation();
+    onToggle(node);
+  };
+
   const rowContent = (
-    <div
-      ref={dragRef}
-      style={style}
-      className={rowClass}
-      {...listeners}
-      {...attributes}
-      onClick={() => onSelect(node)}
-    >
+    <div ref={dragRef} style={style} className={rowClass}>
       {isFolder ? (
-        <button
-          type="button"
-          className="inline-flex size-5 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted"
+        <span
+          role="button"
+          tabIndex={0}
+          className="tree-folder-toggle"
           aria-expanded={expanded}
-          onClick={(event) => {
-            event.stopPropagation();
-            onToggle(node);
+          aria-label={expanded ? "Collapse folder" : "Expand folder"}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={toggleFolder}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleFolder(event);
+            }
           }}
         >
-          <span className="inline-block w-3 text-center text-xs leading-none">
-            {expanded ? "▼" : "▶"}
-          </span>
-        </button>
+          <FolderChevron expanded={expanded} />
+        </span>
       ) : (
         <span className="inline-block w-5 shrink-0 text-center text-muted">
           •
         </span>
       )}
-      <span
-        className="min-w-0 flex-1 truncate text-sm"
-        title={node.href ?? node.name}
+      <div
+        className={labelClass}
+        {...listeners}
+        {...attributes}
+        onClick={() => onSelect(node)}
       >
-        {node.name}
-      </span>
-      <span className="flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-        <button
-          type="button"
-          className="cursor-pointer border-0 bg-transparent px-0.5 text-muted hover:text-foreground"
-          onClick={(event) => {
-            event.stopPropagation();
-            onRename(node);
-          }}
+        <span
+          className="min-w-0 flex-1 truncate text-sm"
+          title={node.href ?? node.name}
         >
-          ✎
-        </button>
-        <button
-          type="button"
-          className="cursor-pointer border-0 bg-transparent px-0.5 text-muted hover:text-foreground"
-          onClick={(event) => {
-            event.stopPropagation();
-            onDelete(node);
-          }}
-        >
-          ✕
-        </button>
-      </span>
+          {node.name}
+        </span>
+        <span className="flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+          <button
+            type="button"
+            className="cursor-pointer border-0 bg-transparent px-0.5 text-muted hover:text-foreground focus:outline-none"
+            onClick={(event) => {
+              event.stopPropagation();
+              onRename(node);
+            }}
+          >
+            ✎
+          </button>
+          <button
+            type="button"
+            className="cursor-pointer border-0 bg-transparent px-0.5 text-muted hover:text-foreground focus:outline-none"
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete(node);
+            }}
+          >
+            ✕
+          </button>
+        </span>
+      </div>
     </div>
   );
   if (isFolder) {

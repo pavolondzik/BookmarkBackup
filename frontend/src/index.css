@@ -129,12 +129,55 @@
     font: inherit;
   }
 
+  button {
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
   a {
     @apply text-accent;
   }
 }
 
 @layer components {
+  .tree-row-label {
+    @apply flex min-w-0 flex-1 items-center gap-1.5 rounded-md py-0.5 pr-1;
+  }
+
+  .group:hover .tree-row-label {
+    background-color: color-mix(in srgb, var(--app-text) 5%, transparent);
+  }
+
+  .tree-row-label.is-selected {
+    background-color: color-mix(in srgb, var(--app-accent) 20%, transparent);
+  }
+
+  .tree-folder-toggle {
+    @apply inline-flex size-5 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted;
+    appearance: none;
+    -webkit-appearance: none;
+    font-family: inherit;
+    font-variant-emoji: text;
+  }
+
+  .tree-folder-toggle:hover {
+    color: var(--app-text);
+  }
+
+  .tree-folder-toggle:focus {
+    outline: none;
+  }
+
+  .tree-folder-toggle:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--app-accent) 55%, transparent);
+    outline-offset: 1px;
+  }
+
+  .tree-drop-root-active {
+    border-color: var(--app-accent);
+    background-color: color-mix(in srgb, var(--app-accent) 10%, transparent);
+  }
+
   .scrollbar-themed {
     scrollbar-width: thin;
     scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);

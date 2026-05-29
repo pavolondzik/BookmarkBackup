@@ -11,9 +11,11 @@
         "--host",
         "127.0.0.1",
         "--port",
-        "8000"
+        "8000",
+        "--reload"
       ],
       "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
       "env": {
         "PYTHONPATH": "${workspaceFolder}/src"
       }

@@ -25,6 +25,7 @@ Re-importing the same bookmarks skips rows that already exist (unique index on `
 ## Requirements
 
 - Python 3.11+
+- Node.js 18+ and npm (to build the React frontend)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for local PostgreSQL)
 
 ## Quick start
@@ -69,14 +70,25 @@ bookmark-backup import-file --path "tests\fixtures\sample_edge_bookmarks.html"
 
 ### 6. Web UI (React + TypeScript)
 
-**Development (recommended):** run API and frontend separately.
+The UI is a Vite + React app in `frontend/`. When you run `bookmark-backup serve`, the API serves the compiled files from `frontend/dist/`. If that folder is missing, the server returns an error asking you to build first.
+
+The left sidebar shows the **folder + bookmark tree** with drag-and-drop move, rename, and delete. Use the **Import bookmarks** panel in the details column to upload `.html`/JSON files or paste local paths (one per line), for example:
+
+- `%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Bookmarks`
+- `%LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks`
+
+#### Development (recommended)
+
+Run the API and frontend separately. Changes hot-reload; no production build is required.
 
 Terminal 1 — API:
+
 ```powershell
 bookmark-backup serve
 ```
 
-Terminal 2 — React UI:
+Terminal 2 — React UI (first time: run `npm install` in `frontend/`):
+
 ```powershell
 cd frontend
 npm install
@@ -85,7 +97,12 @@ npm run dev
 
 Open http://127.0.0.1:5173 (Vite proxies `/api` to port 8000).
 
-**Production-style (single server):**
+**VS Code / Cursor:** open the repo root, install the [recommended extensions](.vscode/extensions.json) if prompted, then use **Run and Debug** → **Full stack (API + React)** (see [.vscode/launch.json](.vscode/launch.json)). The API configuration loads `.env` and runs uvicorn with `--reload`.
+
+#### Production (single server)
+
+Build once, then serve the UI from the API:
+
 ```powershell
 cd frontend
 npm install
@@ -96,11 +113,30 @@ bookmark-backup serve
 
 Open http://127.0.0.1:8000
 
-The left sidebar shows the **folder + bookmark tree** with drag-and-drop move, rename, and delete.
+#### Build
 
-Use the **Import bookmarks** panel in the details column to upload `.html`/JSON files or paste local paths (one per line), for example:
-- `%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Bookmarks`
-- `%LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks`
+Rebuild after you change files under `frontend/src/` and you are viewing the app at http://127.0.0.1:8000 (not the Vite dev server):
+
+```powershell
+cd frontend
+npm run build
+```
+
+`npm run build` type-checks with TypeScript (`tsc -b`) and writes production assets to `frontend/dist/`.
+
+Then:
+
+1. **Restart** `bookmark-backup serve` if it is already running (the API does not pick up new `dist/` files on its own).
+2. **Hard-refresh** the browser (e.g. Ctrl+F5) so cached JS/CSS are not reused.
+
+Other frontend scripts:
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server at http://127.0.0.1:5173 (proxies `/api` to port 8000) |
+| `npm run preview` | Serve the production build locally for a quick check |
+| `npm run format` | Format `src/**/*.{ts,tsx,css}` with Prettier |
+| `npm run format:check` | Verify formatting (useful in CI) |
 
 ### 7. Tests
 

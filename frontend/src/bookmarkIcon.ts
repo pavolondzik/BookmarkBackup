@@ -8,7 +8,11 @@ export function resolveBookmarkIconSrc(
     return embedded;
   }
   const uri = iconUri?.trim();
-  if (uri?.startsWith("http://") || uri?.startsWith("https://")) {
+  if (
+    uri?.startsWith("http://") ||
+    uri?.startsWith("https://") ||
+    uri?.startsWith("data:image")
+  ) {
     return uri;
   }
   if (!href) {

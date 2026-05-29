@@ -10,7 +10,7 @@ import {
   useSensors,
   type CollisionDetection,
 } from "@dnd-kit/core";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getBookmarkInsertPosition } from "../dndInsert";
 import type { BookmarkInsertPosition } from "../dndInsert";
 import {
@@ -63,6 +63,11 @@ export function BookmarkTree({
   const [insertIndicator, setInsertIndicator] =
     useState<BookmarkInsertPosition | null>(null);
   const [draggingBookmark, setDraggingBookmark] = useState(false);
+
+  useEffect(() => {
+    setSelectedId(null);
+  }, [nodes]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
@@ -285,7 +290,7 @@ export function BookmarkTree({
             ref={rootDropRef}
             className={[
               "min-h-[200px] overflow-anchor-none rounded-lg border border-dashed border-transparent p-1",
-              rootIsOver && "border-accent bg-accent/10",
+              rootIsOver && "tree-drop-root-active",
             ]
               .filter(Boolean)
               .join(" ")}
