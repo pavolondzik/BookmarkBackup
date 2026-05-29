@@ -3,10 +3,8 @@ import type { ThemeId } from "./types";
 
 const selectClass =
   "rounded-md border border-border bg-bg px-2 py-1.5 text-xs text-foreground focus:border-accent focus:outline-none";
-
 export function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
-
   return (
     <label className="flex flex-col items-end gap-1 text-xs text-muted">
       <span>Theme</span>

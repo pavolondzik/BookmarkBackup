@@ -31,7 +31,10 @@ type Props = {
   onSelect: (node: TreeNode) => void;
 };
 
-function folderIdsEqual(a: number | null | undefined, b: number | null | undefined): boolean {
+function folderIdsEqual(
+  a: number | null | undefined,
+  b: number | null | undefined,
+): boolean {
   return (a ?? null) === (b ?? null);
 }
 
@@ -41,25 +44,32 @@ const collisionDetection: CollisionDetection = (args) => {
   if (hits.length === 0) {
     return hits;
   }
-  const bookmarkHit = hits.find((hit) => String(hit.id).startsWith("drop-bookmark-"));
+  const bookmarkHit = hits.find((hit) =>
+    String(hit.id).startsWith("drop-bookmark-"),
+  );
   return bookmarkHit ? [bookmarkHit] : hits;
 };
 
-export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props) {
+export function BookmarkTree({
+  nodes,
+  onTreeChange,
+  onRefresh,
+  onSelect,
+}: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
-  const [insertIndicator, setInsertIndicator] = useState<BookmarkInsertPosition | null>(null);
+  const [insertIndicator, setInsertIndicator] =
+    useState<BookmarkInsertPosition | null>(null);
   const [draggingBookmark, setDraggingBookmark] = useState(false);
-
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
-
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
   const { setNodeRef: rootDropRef, isOver: rootIsOver } = useDroppable({
     id: "drop-root",
     data: { kind: "folder", folderId: null } satisfies DropTarget,
   });
-
   const toggleExpanded = useCallback((node: TreeNode) => {
     const key = dragId(node);
     setExpanded((prev) => {
@@ -72,7 +82,6 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
       return next;
     });
   }, []);
-
   const expandAll = useCallback(() => {
     setBulkBusy(true);
     requestAnimationFrame(() => {
@@ -90,11 +99,9 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
       requestAnimationFrame(() => setBulkBusy(false));
     });
   }, [nodes]);
-
   const collapseAll = useCallback(() => {
     setExpanded(new Set());
   }, []);
-
   const handleRename = async (node: TreeNode) => {
     const nextName = window.prompt(
       node.node_type === "folder" ? "Rename folder" : "Rename bookmark",
@@ -114,7 +121,6 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
       setError(err instanceof Error ? err.message : "Rename failed");
     }
   };
-
   const handleDelete = async (node: TreeNode) => {
     const ok = window.confirm(`Delete ${node.node_type} "${node.name}"?`);
     if (!ok) {
@@ -131,34 +137,31 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
       setError(err instanceof Error ? err.message : "Delete failed");
     }
   };
-
-  const handleDragStart = useCallback((event: { active: { data: { current: unknown } } }) => {
-    const active = event.active.data.current as DragItem | undefined;
-    setDraggingBookmark(active?.type === "bookmark");
-    setInsertIndicator(null);
-  }, []);
-
+  const handleDragStart = useCallback(
+    (event: { active: { data: { current: unknown } } }) => {
+      const active = event.active.data.current as DragItem | undefined;
+      setDraggingBookmark(active?.type === "bookmark");
+      setInsertIndicator(null);
+    },
+    [],
+  );
   const handleDragOver = useCallback((event: DragOverEvent) => {
     setInsertIndicator(getBookmarkInsertPosition(event));
   }, []);
-
   const handleDragCancel = useCallback((_event: DragCancelEvent) => {
     setInsertIndicator(null);
     setDraggingBookmark(false);
   }, []);
-
   const handleDragEnd = async (event: DragEndEvent) => {
     setInsertIndicator(null);
     setDraggingBookmark(false);
-
     const active = event.active.data.current as DragItem | undefined;
     if (!active) {
       return;
     }
-
-    const insertPos = active.type === "bookmark" ? getBookmarkInsertPosition(event) : null;
+    const insertPos =
+      active.type === "bookmark" ? getBookmarkInsertPosition(event) : null;
     const overData = event.over?.data.current as DropTarget | undefined;
-
     try {
       if (active.type === "folder") {
         if (overData?.kind !== "folder") {
@@ -168,12 +171,10 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
         await onRefresh();
         return;
       }
-
       if (insertPos) {
         const { sortIndex, folderId: targetFolderId } = insertPos;
         const sourceFolderId = active.folderId ?? null;
         const reorderInPlace = folderIdsEqual(sourceFolderId, targetFolderId);
-
         if (reorderInPlace) {
           const previousTree = nodes;
           const nextTree = reorderBookmarkInTree(
@@ -191,7 +192,6 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
           }
           return;
         }
-
         await updateBookmark(active.id, {
           folder_id: targetFolderId,
           sort_index: sortIndex,
@@ -199,7 +199,6 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
         await onRefresh();
         return;
       }
-
       if (overData?.kind === "folder") {
         await updateBookmark(active.id, { folder_id: overData.folderId });
         await onRefresh();
@@ -208,7 +207,6 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
       setError(err instanceof Error ? err.message : "Move failed");
     }
   };
-
   const renderNodes = (items: TreeNode[], depth: number): React.ReactNode =>
     items.map((node) => (
       <TreeNodeRow
@@ -231,10 +229,11 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
         }}
         onRename={handleRename}
         onDelete={handleDelete}
-        renderChildren={(folder, childDepth) => renderNodes(folder.children, childDepth)}
+        renderChildren={(folder, childDepth) =>
+          renderNodes(folder.children, childDepth)
+        }
       />
     ));
-
   return (
     <DndContext
       sensors={sensors}
@@ -246,15 +245,28 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
     >
       <div className="scrollbar-themed flex min-h-0 flex-1 flex-col overflow-auto overflow-anchor-none p-2">
         <div className="p-2">
-          <h2 className="m-0 mb-1 text-sm font-semibold">Folders & bookmarks</h2>
+          <h2 className="m-0 mb-1 text-sm font-semibold">
+            Folders & bookmarks
+          </h2>
           <p className="m-0 text-xs text-muted">
-            Drag onto a folder to move; onto a bookmark to reorder. ✎ rename, ✕ delete.
+            Drag onto a folder to move; onto a bookmark to reorder. ✎ rename, ✕
+            delete.
           </p>
           <div className="mt-2 flex gap-1.5">
-            <button type="button" className={btnSecondaryClass} onClick={expandAll} disabled={bulkBusy}>
+            <button
+              type="button"
+              className={btnSecondaryClass}
+              onClick={expandAll}
+              disabled={bulkBusy}
+            >
               Expand all
             </button>
-            <button type="button" className={btnSecondaryClass} onClick={collapseAll} disabled={bulkBusy}>
+            <button
+              type="button"
+              className={btnSecondaryClass}
+              onClick={collapseAll}
+              disabled={bulkBusy}
+            >
               Collapse all
             </button>
           </div>
@@ -279,7 +291,9 @@ export function BookmarkTree({ nodes, onTreeChange, onRefresh, onSelect }: Props
               .join(" ")}
           >
             {nodes.length === 0 ? (
-              <p className="px-2 text-sm text-muted">No folders yet. Import bookmarks first.</p>
+              <p className="px-2 text-sm text-muted">
+                No folders yet. Import bookmarks first.
+              </p>
             ) : (
               renderNodes(nodes, 0)
             )}

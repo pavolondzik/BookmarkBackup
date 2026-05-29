@@ -7,12 +7,10 @@ export type BookmarkInsertPosition = {
   folderId: number | null;
   sortIndex: number;
 };
-
 type DragRects = {
   active: Active;
   over: Over | null;
 };
-
 export function getBookmarkInsertPosition(
   event: DragRects,
 ): BookmarkInsertPosition | null {
@@ -20,21 +18,17 @@ export function getBookmarkInsertPosition(
   if (!active || active.type !== "bookmark") {
     return null;
   }
-
   const over = event.over;
   if (!over) {
     return null;
   }
-
   const overData = over.data.current as DropTarget | undefined;
   if (!overData || overData.kind !== "bookmark") {
     return null;
   }
-
   if (active.id === overData.bookmarkId) {
     return null;
   }
-
   let sortIndex = overData.sortIndex;
   let position: "before" | "after" = "before";
   const overRect = over.rect;
@@ -47,7 +41,6 @@ export function getBookmarkInsertPosition(
       sortIndex += 1;
     }
   }
-
   return {
     targetBookmarkId: overData.bookmarkId,
     position,

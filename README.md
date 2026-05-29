@@ -101,11 +101,9 @@ Open http://127.0.0.1:8000
 
 The left sidebar shows the **folder + bookmark tree** with drag-and-drop move, rename, and delete.
 
-Use the **legacy import page** at http://127.0.0.1:8000/legacy (or link in the React UI) to:
-- upload `.html`/JSON files directly, or
-- paste one path per line, for example:
-  - `%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Bookmarks`
-  - `%LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks`
+Use the **Import bookmarks** panel in the details column to upload `.html`/JSON files or paste local paths (one per line), for example:
+- `%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Bookmarks`
+- `%LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks`
 
 ### 7. Tests
 
@@ -129,8 +127,9 @@ src/bookmark_backup/
   importers/             # JSON + HTML extract
   services/              # dedupe + import
   db/models.py
-  web/app.py             # FastAPI + legacy Jinja UI
+  web/app.py             # FastAPI app + static SPA
   web/api.py             # REST API for React UI
+  web/import_handlers.py # multipart import for /api/import
   cli.py
 frontend/                # React + TypeScript (Vite)
 tests/

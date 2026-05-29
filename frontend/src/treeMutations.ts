@@ -1,6 +1,9 @@
 import type { TreeNode } from "./types";
 
-export function findBookmarkNode(tree: TreeNode[], bookmarkId: number): TreeNode | null {
+export function findBookmarkNode(
+  tree: TreeNode[],
+  bookmarkId: number,
+): TreeNode | null {
   for (const node of tree) {
     if (node.node_type === "bookmark" && node.id === bookmarkId) {
       return node;
@@ -14,7 +17,6 @@ export function findBookmarkNode(tree: TreeNode[], bookmarkId: number): TreeNode
   }
   return null;
 }
-
 function reorderBookmarksInChildren(
   children: TreeNode[],
   bookmarkId: number,
@@ -26,20 +28,16 @@ function reorderBookmarksInChildren(
   if (fromIndex < 0) {
     return children;
   }
-
   const nextBookmarks = [...bookmarks];
   const [moved] = nextBookmarks.splice(fromIndex, 1);
   const insertAt = Math.max(0, Math.min(toIndex, nextBookmarks.length));
   nextBookmarks.splice(insertAt, 0, moved);
-
   const reindexed = nextBookmarks.map((node, index) => ({
     ...node,
     sort_index: index,
   }));
-
   return [...folders, ...reindexed];
 }
-
 export function reorderBookmarkInTree(
   tree: TreeNode[],
   bookmarkId: number,
@@ -49,7 +47,6 @@ export function reorderBookmarkInTree(
   if (folderId === null) {
     return reorderBookmarksInChildren(tree, bookmarkId, toIndex);
   }
-
   return tree.map((node) => {
     if (node.node_type !== "folder") {
       return node;
@@ -57,12 +54,21 @@ export function reorderBookmarkInTree(
     if (node.id === folderId) {
       return {
         ...node,
-        children: reorderBookmarksInChildren(node.children, bookmarkId, toIndex),
+        children: reorderBookmarksInChildren(
+          node.children,
+          bookmarkId,
+          toIndex,
+        ),
       };
     }
     return {
       ...node,
-      children: reorderBookmarkInTree(node.children, bookmarkId, folderId, toIndex),
+      children: reorderBookmarkInTree(
+        node.children,
+        bookmarkId,
+        folderId,
+        toIndex,
+      ),
     };
   });
 }

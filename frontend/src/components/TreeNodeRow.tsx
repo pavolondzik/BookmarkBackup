@@ -35,23 +35,25 @@ export function TreeNodeRow({
   const id = dragId(node);
   const isFolder = node.node_type === "folder";
   const selected = selectedId === id;
-
   const dragData: DragItem =
     node.node_type === "bookmark"
       ? { type: "bookmark", id: node.id, folderId: node.folder_id ?? null }
       : { type: "folder", id: node.id };
-
-  const { attributes, listeners, setNodeRef: dragRef, transform, isDragging } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef: dragRef,
+    transform,
+    isDragging,
+  } = useDraggable({
     id,
     data: dragData,
   });
-
   const { setNodeRef: folderDropRef, isOver: folderOver } = useDroppable({
     id: `drop-folder-${node.id}`,
     disabled: !isFolder,
     data: { kind: "folder", folderId: node.id } satisfies DropTarget,
   });
-
   const { setNodeRef: bookmarkDropRef } = useDroppable({
     id: `drop-bookmark-${node.id}`,
     disabled: isFolder,
@@ -62,15 +64,12 @@ export function TreeNodeRow({
       sortIndex: node.sort_index ?? 0,
     } satisfies DropTarget,
   });
-
   const indentPx = depth * 14 + 8;
-
   const style = {
     transform: CSS.Translate.toString(transform),
     opacity: isDragging ? 0.5 : 1,
     paddingLeft: `${indentPx}px`,
   };
-
   const rowClass = [
     "group flex cursor-grab select-none items-center gap-1.5 rounded-md py-1 pr-1",
     "hover:bg-foreground/5",
@@ -80,10 +79,8 @@ export function TreeNodeRow({
   ]
     .filter(Boolean)
     .join(" ");
-
   const insertLineClass =
     "pointer-events-none relative z-20 my-0.5 mr-3 h-1 rounded-sm bg-accent shadow-[0_0_8px_var(--app-insert-glow)]";
-
   const rowContent = (
     <div
       ref={dragRef}
@@ -108,9 +105,14 @@ export function TreeNodeRow({
           </span>
         </button>
       ) : (
-        <span className="inline-block w-5 shrink-0 text-center text-muted">•</span>
+        <span className="inline-block w-5 shrink-0 text-center text-muted">
+          •
+        </span>
       )}
-      <span className="min-w-0 flex-1 truncate text-sm" title={node.href ?? node.name}>
+      <span
+        className="min-w-0 flex-1 truncate text-sm"
+        title={node.href ?? node.name}
+      >
         {node.name}
       </span>
       <span className="flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
@@ -137,28 +139,34 @@ export function TreeNodeRow({
       </span>
     </div>
   );
-
   if (isFolder) {
     return (
       <div>
-        <div ref={folderDropRef}>
-          {rowContent}
-        </div>
+        <div ref={folderDropRef}>{rowContent}</div>
         {expanded && node.children.length > 0 && (
-          <div className="children-enter">{renderChildren(node, depth + 1)}</div>
+          <div className="children-enter">
+            {renderChildren(node, depth + 1)}
+          </div>
         )}
       </div>
     );
   }
-
   return (
     <div ref={bookmarkDropRef}>
       {dropIndicator === "before" && (
-        <div className={insertLineClass} style={{ marginLeft: `${indentPx}px` }} aria-hidden="true" />
+        <div
+          className={insertLineClass}
+          style={{ marginLeft: `${indentPx}px` }}
+          aria-hidden="true"
+        />
       )}
       {rowContent}
       {dropIndicator === "after" && (
-        <div className={insertLineClass} style={{ marginLeft: `${indentPx}px` }} aria-hidden="true" />
+        <div
+          className={insertLineClass}
+          style={{ marginLeft: `${indentPx}px` }}
+          aria-hidden="true"
+        />
       )}
     </div>
   );

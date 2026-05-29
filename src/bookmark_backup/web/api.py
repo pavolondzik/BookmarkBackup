@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from bookmark_backup.db.models import Bookmark, Folder
 from bookmark_backup.db.session import get_db
 from bookmark_backup.services.bookmark_order import reindex_folder, reorder_bookmark
+from bookmark_backup.web.import_handlers import run_import
 from bookmark_backup.web.schemas import (
     BookmarkOut,
     BookmarkUpdate,
     DeviceOut,
     ExportOut,
     FolderUpdate,
+    ImportResultOut,
     TreeNodeOut,
     UserOut,
 )
@@ -24,6 +26,23 @@ from bookmark_backup.web.tree_service import (
 )
 
 router = APIRouter(prefix="/api")
+
+
+@router.post("/import", response_model=ImportResultOut)
+async def api_import_bookmarks(
+    files: list[UploadFile] = File(default=[]),
+    paths: str = Form(default=""),
+    user_email: str = Form(default="local@bookmark-backup"),
+    device_name: str = Form(default="local-device"),
+    db: Session = Depends(get_db),
+) -> ImportResultOut:
+    return await run_import(
+        db=db,
+        files=files,
+        paths=paths,
+        user_email=user_email,
+        device_name=device_name,
+    )
 
 
 @router.get("/users", response_model=list[UserOut])

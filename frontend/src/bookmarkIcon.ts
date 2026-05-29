@@ -7,16 +7,13 @@ export function resolveBookmarkIconSrc(
   if (embedded?.startsWith("data:image")) {
     return embedded;
   }
-
   const uri = iconUri?.trim();
   if (uri?.startsWith("http://") || uri?.startsWith("https://")) {
     return uri;
   }
-
   if (!href) {
     return null;
   }
-
   try {
     const host = new URL(href).hostname;
     if (host) {
@@ -25,6 +22,5 @@ export function resolveBookmarkIconSrc(
   } catch {
     return null;
   }
-
   return null;
 }
