@@ -77,3 +77,95 @@ def test_import_skips_url_already_in_database() -> None:
     assert result.skipped_duplicates == 1
     count = session.scalar(select(func.count()).select_from(Bookmark))
     assert count == 1
+
+
+def test_import_accepts_long_bookmark_title() -> None:
+    long_title = "x" * 5000
+    payload = ImportPayload(
+        browser_name="chrome",
+        source_format="json",
+        source_path="test.json",
+        bookmarks=[
+            ImportedBookmark(
+                href="https://example.com/long-title",
+                title=long_title,
+                folder_path="",
+            ),
+        ],
+    )
+
+    session = _session()
+    ImportService(session).import_bookmarks(payload)
+
+    bookmark = session.scalar(select(Bookmark))
+    assert bookmark is not None
+    assert bookmark.title == long_title
+
+
+def test_import_clips_long_folder_name() -> None:
+    payload = ImportPayload(
+        browser_name="chrome",
+        source_format="json",
+        source_path="test.json",
+        bookmarks=[
+            ImportedBookmark(
+                href="https://example.com/in-deep-folder",
+                title="Deep",
+                folder_path="a" * 300,
+            ),
+        ],
+    )
+
+    session = _session()
+    ImportService(session).import_bookmarks(payload)
+
+    bookmark = session.scalar(select(Bookmark))
+    assert bookmark is not None
+    assert bookmark.folder is not None
+    assert len(bookmark.folder.name) == 255
+
+
+def test_import_accepts_long_bookmark_title() -> None:
+    long_title = "x" * 5000
+    payload = ImportPayload(
+        browser_name="chrome",
+        source_format="json",
+        source_path="test.json",
+        bookmarks=[
+            ImportedBookmark(
+                href="https://example.com/long-title",
+                title=long_title,
+                folder_path="",
+            ),
+        ],
+    )
+
+    session = _session()
+    ImportService(session).import_bookmarks(payload)
+
+    bookmark = session.scalar(select(Bookmark))
+    assert bookmark is not None
+    assert bookmark.title == long_title
+
+
+def test_import_clips_long_folder_name() -> None:
+    payload = ImportPayload(
+        browser_name="chrome",
+        source_format="json",
+        source_path="test.json",
+        bookmarks=[
+            ImportedBookmark(
+                href="https://example.com/in-deep-folder",
+                title="Deep",
+                folder_path="a" * 300,
+            ),
+        ],
+    )
+
+    session = _session()
+    ImportService(session).import_bookmarks(payload)
+
+    bookmark = session.scalar(select(Bookmark))
+    assert bookmark is not None
+    assert bookmark.folder is not None
+    assert len(bookmark.folder.name) == 255

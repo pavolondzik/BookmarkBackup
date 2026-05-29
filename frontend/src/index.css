@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: var(--app-bg);
+  --color-surface: var(--app-surface);
+  --color-foreground: var(--app-text);
+  --color-muted: var(--app-muted);
+  --color-accent: var(--app-accent);
+  --color-border: var(--app-border);
+  --color-danger: var(--app-danger);
+  --color-success: var(--app-success);
+  --color-overlay: var(--app-overlay);
+}
+
+:root,
+[data-theme="dark"] {
+  --app-bg: #0f1419;
+  --app-surface: #1a2332;
+  --app-text: #e7ecf3;
+  --app-muted: #a8b6c9;
+  --app-accent: #3d8bfd;
+  --app-border: #2a3544;
+  --app-danger: #ff7b7b;
+  --app-success: #9fe39f;
+  --app-overlay: rgba(15, 20, 25, 0.45);
+  --app-insert-glow: rgba(61, 139, 253, 0.65);
+  --app-scrollbar-track: #1a2332;
+  --app-scrollbar-thumb: #3d8bfd;
+  --app-scrollbar-thumb-hover: #63a6ff;
+}
+
+/* Follow OS light/dark preference (prefers-color-scheme) */
+[data-theme="system"] {
+  --app-bg: #0f1419;
+  --app-surface: #1a2332;
+  --app-text: #e7ecf3;
+  --app-muted: #8b9cb3;
+  --app-accent: #3d8bfd;
+  --app-border: #2a3544;
+  --app-danger: #ff7b7b;
+  --app-success: #9fe39f;
+  --app-overlay: rgba(15, 20, 25, 0.45);
+  --app-insert-glow: rgba(61, 139, 253, 0.65);
+  --app-scrollbar-track: #1a2332;
+  --app-scrollbar-thumb: #3d8bfd;
+  --app-scrollbar-thumb-hover: #63a6ff;
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --app-bg: #f4f6f9;
+    --app-surface: #ffffff;
+    --app-text: #1a2332;
+    --app-muted: #5c6b80;
+    --app-accent: #2563eb;
+    --app-border: #d8dee8;
+    --app-danger: #dc2626;
+    --app-success: #16a34a;
+    --app-overlay: rgba(244, 246, 249, 0.7);
+    --app-insert-glow: rgba(37, 99, 235, 0.45);
+    --app-scrollbar-track: #e8ecf2;
+    --app-scrollbar-thumb: #2563eb;
+    --app-scrollbar-thumb-hover: #3b82f6;
+  }
+}
+
+[data-theme="light"] {
+  --app-bg: #f4f6f9;
+  --app-surface: #ffffff;
+  --app-text: #1a2332;
+  --app-muted: #5c6b80;
+  --app-accent: #2563eb;
+  --app-border: #d8dee8;
+  --app-danger: #dc2626;
+  --app-success: #16a34a;
+  --app-overlay: rgba(244, 246, 249, 0.7);
+  --app-insert-glow: rgba(37, 99, 235, 0.45);
+  --app-scrollbar-track: #e8ecf2;
+  --app-scrollbar-thumb: #2563eb;
+  --app-scrollbar-thumb-hover: #3b82f6;
+}
+
+[data-theme="forest"] {
+  --app-bg: #0f1a14;
+  --app-surface: #1a2e22;
+  --app-text: #e2efe6;
+  --app-muted: #8faa96;
+  --app-accent: #3ecf8e;
+  --app-border: #2a4434;
+  --app-danger: #f87171;
+  --app-success: #86efac;
+  --app-overlay: rgba(15, 26, 20, 0.5);
+  --app-insert-glow: rgba(62, 207, 142, 0.55);
+  --app-scrollbar-track: #1a2e22;
+  --app-scrollbar-thumb: #3ecf8e;
+  --app-scrollbar-thumb-hover: #6ee7a8;
+}
+
+[data-theme="grey"] {
+  /* Like Light, but stepped down into grey — dark grey canvas, lighter grey panels */
+  --app-bg: #d0d5db;
+  --app-surface: #e2e5ea;
+  --app-text: #1f2429;
+  --app-muted:  #5c6570;
+  --app-accent: #ea580c;
+  --app-border: #b8bec7;
+  --app-danger: #dc2626;
+  --app-success: #15803d;
+  --app-overlay: rgba(156, 163, 173, 0.55);
+  --app-insert-glow: rgba(234, 88, 12, 0.55);
+  --app-scrollbar-track: #c8cdd5;
+  --app-scrollbar-thumb: #ea580c;
+  --app-scrollbar-thumb-hover: #f97316;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply m-0 bg-bg font-sans text-foreground antialiased;
+  }
+
+  button,
+  select,
+  input,
+  textarea {
+    font: inherit;
+  }
+
+  a {
+    @apply text-accent;
+  }
+}
+
+@layer components {
+  .scrollbar-themed {
+    scrollbar-width: thin;
+    scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);
+  }
+
+  .scrollbar-themed::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+  }
+
+  .scrollbar-themed::-webkit-scrollbar-track {
+    background: var(--app-scrollbar-track);
+    border-radius: 999px;
+  }
+
+  .scrollbar-themed::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      var(--app-scrollbar-thumb) 0%,
+      color-mix(in srgb, var(--app-scrollbar-thumb) 80%, black) 100%
+    );
+    border-radius: 999px;
+    border: 2px solid var(--app-scrollbar-track);
+  }
+
+  .scrollbar-themed::-webkit-scrollbar-thumb:hover {
+    background: var(--app-scrollbar-thumb-hover);
+  }
+
+  .scrollbar-themed::-webkit-scrollbar-corner {
+    background: var(--app-scrollbar-track);
+  }
+
+  .splitter {
+    @apply relative w-2 shrink-0 cursor-col-resize bg-transparent;
+  }
+
+  .splitter::after {
+    content: "";
+    @apply absolute inset-y-0 left-[3px] w-0.5;
+    background: color-mix(in srgb, var(--app-border) 90%, transparent);
+  }
+
+  .splitter:hover::after,
+  .splitter:active::after {
+    background: var(--app-accent);
+  }
+
+  .splitter:focus-visible {
+    @apply outline-2 outline-offset-[-2px] outline-accent;
+  }
+
+  .spinner {
+    @apply size-7 animate-spin rounded-full border-[3px] border-accent/25 border-t-accent border-r-accent;
+  }
+
+  .children-enter {
+    animation: treeChildrenIn 0.18s ease-out;
+    transform-origin: top;
+  }
+
+  @keyframes treeChildrenIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}

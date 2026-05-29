@@ -21,6 +21,11 @@ htmlcov/
 
 # Local data
 *.db
+.uploads/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
 
 # Debugging
 .env

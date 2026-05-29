@@ -1,18 +1,40 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "Bookmark Backup Web",
-        "type": "debugpy",
-        "request": "launch",
-        "module": "uvicorn",
-        "args": [
-          "bookmark_backup.web.app:app",
-          "--host", "127.0.0.1",
-          "--port", "8000"
-        ],
-        "cwd": "${workspaceFolder}",
-        "jinja": true
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Bookmark Backup API",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "bookmark_backup.web.app:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "jinja": true
+    },
+    {
+      "name": "Frontend (Vite)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev",
+      "cwd": "${workspaceFolder}/frontend"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full stack (API + React)",
+      "configurations": ["Bookmark Backup API", "Frontend (Vite)"],
+      "stopAll": true,
+      "presentation": {
+        "order": ["Bookmark Backup API", "Frontend (Vite)"]
       }
-    ]
-  }
+    }
+  ]
+}

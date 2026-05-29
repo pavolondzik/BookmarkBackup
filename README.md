@@ -70,15 +70,38 @@ bookmark-backup import-chrome --path "%LOCALAPPDATA%\Google\Chrome\User Data\Def
 bookmark-backup import-file --path "tests\fixtures\sample_edge_bookmarks.html"
 ```
 
-### 6. Web UI
+### 6. Web UI (React + TypeScript)
 
+**Development (recommended):** run API and frontend separately.
+
+Terminal 1 — API:
 ```powershell
+bookmark-backup serve
+```
+
+Terminal 2 — React UI:
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://127.0.0.1:5173 (Vite proxies `/api` to port 8000).
+
+**Production-style (single server):**
+```powershell
+cd frontend
+npm install
+npm run build
+cd ..
 bookmark-backup serve
 ```
 
 Open http://127.0.0.1:8000
 
-Use the **Import bookmarks** panel to:
+The left sidebar shows the **folder + bookmark tree** with drag-and-drop move, rename, and delete.
+
+Use the **legacy import page** at http://127.0.0.1:8000/legacy (or link in the React UI) to:
 - upload `.html`/JSON files directly, or
 - paste one path per line, for example:
   - `%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Bookmarks`
@@ -103,12 +126,13 @@ pytest
 
 ```
 src/bookmark_backup/
-  importers/chrome.py    # Extract
-  services/dedupe.py     # Transform
-  services/import_service.py
-  db/models.py           # Load
-  web/app.py             # Browse
+  importers/             # JSON + HTML extract
+  services/              # dedupe + import
+  db/models.py
+  web/app.py             # FastAPI + legacy Jinja UI
+  web/api.py             # REST API for React UI
   cli.py
+frontend/                # React + TypeScript (Vite)
 tests/
 alembic/
 ```

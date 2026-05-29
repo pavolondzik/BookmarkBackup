@@ -88,7 +88,7 @@ class Bookmark(Base):
     href_normalized: Mapped[str] = mapped_column(String(2048), nullable=False)
     icon_uri: Mapped[str] = mapped_column(Text, nullable=False, default="")
     icon: Mapped[str | None] = mapped_column(Text, nullable=True)
-    title: Mapped[str] = mapped_column(String(1024), nullable=False, default="")
+    title: Mapped[str] = mapped_column(Text, nullable=False, default="")
     date_added: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     date_modified: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
@@ -97,6 +97,7 @@ class Bookmark(Base):
         nullable=False,
     )
     folder_id: Mapped[int | None] = mapped_column(ForeignKey("folders.id"), nullable=True)
+    sort_index: Mapped[int] = mapped_column(nullable=False, default=0, server_default="0")
     folder: Mapped[Folder | None] = relationship(back_populates="bookmarks")
     __table_args__ = (
         Index("ix_bookmarks_href_normalized", "href_normalized", unique=True),

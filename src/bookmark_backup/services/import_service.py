@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -8,6 +9,12 @@ from sqlalchemy.orm import Session
 from bookmark_backup.db.models import Bookmark, Browser, BrowserExport, Device, Folder, User
 from bookmark_backup.importers.base import ImportPayload
 from bookmark_backup.services.dedupe import normalize_url
+from bookmark_backup.services.text_limits import (
+    FOLDER_NAME_MAX,
+    HREF_NORMALIZED_MAX,
+    SOURCE_PATH_MAX,
+    clip,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,23 +39,28 @@ class ImportService:
             device_name=device_name,
             browser_name=payload.browser_name,
         )
+        source_path = payload.source_path
+        if source_path:
+            source_path = clip(source_path, SOURCE_PATH_MAX)
+
         browser_export = BrowserExport(
             browser=browser,
             exported_at=datetime.now(tz=UTC),
             source_format=payload.source_format,
-            source_path=payload.source_path,
+            source_path=source_path,
             checksum=None,
         )
         self.session.add(browser_export)
         self.session.flush()
 
         folder_cache: dict[str, Folder] = {}
+        sort_counters: dict[int | None, int] = defaultdict(int)
         inserted = 0
         skipped = 0
-        seen_in_batch: set[str] =  set()
+        seen_in_batch: set[str] = set()
 
         for item in payload.bookmarks:
-            normalized = normalize_url(item.href)
+            normalized = clip(normalize_url(item.href), HREF_NORMALIZED_MAX)
             if normalized in seen_in_batch:
                 skipped += 1
                 continue
@@ -64,15 +76,19 @@ class ImportService:
                 folder_path=item.folder_path,
                 folder_cache=folder_cache,
             )
+            folder_key: int | None = folder.id if folder is not None else None
+            sort_index = sort_counters[folder_key]
+            sort_counters[folder_key] += 1
             self.session.add(
                 Bookmark(
                     href=item.href,
                     href_normalized=normalized,
-                    title=item.title,
+                    title=item.title or item.href,
                     icon_uri=item.icon_uri,
                     icon=item.icon,
                     date_added=item.date_added,
                     folder=folder,
+                    sort_index=sort_index,
                 )
             )
             seen_in_batch.add(normalized)
@@ -149,7 +165,7 @@ class ImportService:
 
             folder = Folder(
                 browser_export=browser_export,
-                name=segment,
+                name=clip(segment, FOLDER_NAME_MAX),
                 parent=parent,
             )
             self.session.add(folder)

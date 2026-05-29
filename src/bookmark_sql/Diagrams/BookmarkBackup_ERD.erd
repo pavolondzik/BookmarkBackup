@@ -2,27 +2,27 @@
 <diagram version="1" name="BookmarkBackup_ERD.erd">
 	<entities>
 		<data-source id="postgres-jdbc-19e73083b98-59901f8c9f679e5b">
-			<entity id="1" name="bookmarks" fq-name="public.bookmarks" order="0" x="853" y="524">
+			<entity id="1" name="bookmarks" fq-name="public.bookmarks" order="0" x="609" y="544">
 				<path name="public"/>
 				<path name="bookmark_backup"/>
 			</entity>
-			<entity id="2" name="browsers" fq-name="public.browsers" order="1" x="416" y="331">
+			<entity id="2" name="browsers" fq-name="public.browsers" order="1" x="172" y="351">
 				<path name="public"/>
 				<path name="bookmark_backup"/>
 			</entity>
-			<entity id="3" name="browser_exports" fq-name="public.browser_exports" order="2" x="628" y="414">
+			<entity id="3" name="browser_exports" fq-name="public.browser_exports" order="2" x="384" y="434">
 				<path name="public"/>
 				<path name="bookmark_backup"/>
 			</entity>
-			<entity id="4" name="devices" fq-name="public.devices" order="3" x="637" y="291">
+			<entity id="4" name="devices" fq-name="public.devices" order="3" x="393" y="311">
 				<path name="public"/>
 				<path name="bookmark_backup"/>
 			</entity>
-			<entity id="5" name="folders" fq-name="public.folders" order="4" x="915" y="331">
+			<entity id="5" name="folders" fq-name="public.folders" order="4" x="671" y="351">
 				<path name="public"/>
 				<path name="bookmark_backup"/>
 			</entity>
-			<entity id="6" name="users" fq-name="public.users" order="5" x="801" y="191">
+			<entity id="6" name="users" fq-name="public.users" order="5" x="557" y="211">
 				<path name="public"/>
 				<path name="bookmark_backup"/>
 			</entity>
@@ -34,10 +34,10 @@
 		<relation name="browsers_device_id_fkey" fq-name="public.browsers.browsers_device_id_fkey" type="fk" pk-ref="4" fk-ref="2"/>
 		<relation name="fk_bookmarks_folder_id_folders" fq-name="public.bookmarks.fk_bookmarks_folder_id_folders" type="fk" pk-ref="5" fk-ref="1"/>
 		<relation name="folders_parent_id_fkey" fq-name="public.folders.folders_parent_id_fkey" type="fk" pk-ref="5" fk-ref="5">
-			<bend type="rel" x="1090" y="423"/>
-			<bend type="rel" x="1126" y="405"/>
-			<bend type="rel" x="1126" y="370"/>
-			<bend type="rel" x="1090" y="353"/>
+			<bend type="rel" x="846" y="443"/>
+			<bend type="rel" x="882" y="425"/>
+			<bend type="rel" x="882" y="390"/>
+			<bend type="rel" x="846" y="373"/>
 		</relation>
 		<relation name="devices_user_id_fkey" fq-name="public.devices.devices_user_id_fkey" type="fk" pk-ref="6" fk-ref="4"/>
 	</relations>

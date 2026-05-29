@@ -3,8 +3,10 @@ import os
 from datetime import UTC, datetime
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, Form, Query, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
@@ -16,8 +18,10 @@ from bookmark_backup.importers.base import ImportPayload
 from bookmark_backup.importers.chrome import ChromeImporter
 from bookmark_backup.importers.html_bookmarks import HtmlBookmarksImporter
 from bookmark_backup.services.import_service import ImportService
+from bookmark_backup.web.api import router as api_router
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
+FRONTEND_DIST = Path(__file__).resolve().parents[3] / "frontend" / "dist"
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 app = FastAPI(
@@ -26,9 +30,30 @@ app = FastAPI(
     version=__version__,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/", response_class=HTMLResponse)
-def index(
+app.include_router(api_router)
+
+if (FRONTEND_DIST / "assets").is_dir():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
+
+
+@app.get("/")
+def root():
+    index = FRONTEND_DIST / "index.html"
+    if index.is_file():
+        return FileResponse(index)
+    return RedirectResponse(url="/legacy")
+
+
+@app.get("/legacy", response_class=HTMLResponse)
+def legacy_index(
     request: Request,
     q: str | None = Query(None, description="Search title or URL"),
     imported: str | None = Query(None),
@@ -65,37 +90,50 @@ async def import_bookmarks(
     device_name: str = Form(default="local-device"),
     db: Session = Depends(get_db),
 ) -> RedirectResponse:
-    payloads: list[ImportPayload] = []
-    for file in files:
-        raw = await file.read()
-        if not raw:
-            continue
-        path = _persist_upload(file.filename or "bookmarks_upload", raw)
-        payloads.append(_load_payload_from_path(path))
+    try:
+        payloads: list[ImportPayload] = []
+        for file in files:
+            raw = await file.read()
+            if not raw:
+                continue
+            path = _persist_upload(file.filename or "bookmarks_upload", raw)
+            payloads.append(_load_payload_from_path(path))
 
-    for line in paths.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        path = Path(os.path.expandvars(line))
-        payloads.append(_load_payload_from_path(path))
+        for line in paths.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            path = Path(os.path.expandvars(line))
+            payloads.append(_load_payload_from_path(path))
 
-    service = ImportService(db)
-    inserted_total = 0
-    scanned_total = 0
-    skipped_total = 0
-    for payload in payloads:
-        result = service.import_bookmarks(
-            payload=payload,
-            user_email=user_email,
-            device_name=device_name,
-        )
-        inserted_total += result.inserted
-        scanned_total += result.scanned
-        skipped_total += result.skipped_duplicates
+        if not payloads:
+            raise HTTPException(
+                status_code=400,
+                detail="No import files or paths provided.",
+            )
+
+        service = ImportService(db)
+        inserted_total = 0
+        scanned_total = 0
+        skipped_total = 0
+        for payload in payloads:
+            result = service.import_bookmarks(
+                payload=payload,
+                user_email=user_email,
+                device_name=device_name,
+            )
+            inserted_total += result.inserted
+            scanned_total += result.scanned
+            skipped_total += result.skipped_duplicates
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     message = f"Imported {inserted_total}/{scanned_total}, skipped {skipped_total}"
-    return RedirectResponse(url=f"/?imported={message}", status_code=303)
+    if (FRONTEND_DIST / "index.html").is_file():
+        return RedirectResponse(url=f"/?imported={message}", status_code=303)
+    return RedirectResponse(url=f"/legacy?imported={message}", status_code=303)
 
 
 @app.get("/health")

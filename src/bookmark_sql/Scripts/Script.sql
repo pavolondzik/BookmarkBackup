@@ -10,6 +10,25 @@ ORDER BY relname;
 select *
 from folders;
 
-select *
-from bookmarks;
 
+select b.*
+from folders f
+inner join bookmarks b on b.folder_id = f.id
+where f.name = 'Byt'
+
+select *
+from users
+
+select * 
+from devices
+
+select *
+from browsers
+
+select *
+from browser_exports 
+
+
+select *
+from bookmarks
+limit 50;
