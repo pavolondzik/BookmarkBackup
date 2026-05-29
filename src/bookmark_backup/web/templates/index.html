@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmark Backup</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --text: #e7ecf3;
+      --muted: #8b9cb3;
+      --accent: #3d8bfd;
+      --border: #2a3544;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 1.5rem;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 50%;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    header { margin-bottom: 1.5rem; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    .meta { color: var(--muted); font-size: 0.9rem; }
+    /*form { display: flex; gap: 0.5rem; margin: 1rem 0; max-width: 40rem; }*/
+    form.search-form { display: flex; gap: 0.5rem; margin: 1rem 0; max-width: 40rem; }
+    input[type="search"] {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+    }
+    button {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li {
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+    li a { color: var(--accent); text-decoration: none; word-break: break-all; }
+    li a:hover { text-decoration: underline; }
+    .title { font-weight: 600; margin-bottom: 0.25rem; }
+    .folder { font-size: 0.8rem; color: var(--muted); }
+    .empty { color: var(--muted); padding: 2rem; text-align: center; }
+    .panel {
+      margin-top: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .panel h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+    }
+    .panel form { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 0.75rem; 
+      max-width: 100%; 
+    }
+    textarea {
+      width: 100%;
+      min-height: 5rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .notice {
+      margin: 0.75rem 0;
+      color: #9fe39f;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+  <header>
+    <h1>Bookmark Backup</h1>
+    <p class="meta">
+      {{ total }} bookmark(s) in database
+      {% if query %} — showing {{ shown }} match(es) for “{{ query }}”{% endif %}
+    </p>
+  </header>
+
+  <form method="get" action="/">
+    <input type="search" name="q" value="{{ query }}" placeholder="Search title or URL…" autofocus>
+    <button type="submit">Search</button>
+  </form>
+  {% if imported %}
+  <p class="notice">{{ imported }}</p>
+  {% endif %}
+
+  <section class="panel">
+    <h2>Import bookmarks (JSON or HTML)</h2>
+    <form method="post" action="/import" enctype="multipart/form-data">
+      <div class="grid">
+        <div class="field">
+          <label for="user_email">User email</label>
+          <input id="user_email" type="text" name="user_email" value="local@bookmark-backup">
+        </div>
+        <div class="field">
+          <label for="device_name">Device name</label>
+          <input id="device_name" type="text" name="device_name" value="local-device">
+        </div>
+      </div>
+      <div class="field">
+        <label for="files">Upload file(s)</label>
+        <input id="files" type="file" name="files" multiple>
+      </div>
+      <div class="field">
+        <label for="paths">Or local path(s), one per line</label>
+        <textarea id="paths" name="paths">%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Bookmarks
+%LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks</textarea>
+      </div>
+      <button type="submit">Import now</button>
+    </form>
+  </section>
+
+  {% if bookmarks %}
+  <ul>
+    {% for b in bookmarks %}
+    <li>
+      <div class="title">{{ b.title or "(no title)" }}</div>
+      <a href="{{ b.href }}" target="_blank" rel="noopener">{{ b.href }}</a>
+      {% if b.folder %}
+      <div class="folder">{{ b.folder.name }}</div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="empty">
+    No bookmarks yet. Run <code>bookmark-backup import-chrome</code> from the project folder.
+  </p>
+  {% endif %}
+</main>
+</body>
+</html>

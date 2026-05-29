@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Bookmark Backup Web",
+        "type": "debugpy",
+        "request": "launch",
+        "module": "uvicorn",
+        "args": [
+          "bookmark_backup.web.app:app",
+          "--host", "127.0.0.1",
+          "--port", "8000"
+        ],
+        "cwd": "${workspaceFolder}",
+        "jinja": true
+      }
+    ]
+  }

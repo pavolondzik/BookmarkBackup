@@ -1,0 +1,29 @@
+{
+  "checksum": "ignored",
+  "version": 1,
+  "roots": {
+    "bookmark_bar": {
+      "children": [
+        {
+          "name": "Docs",
+          "type": "folder",
+          "children": [
+            {
+              "name": "Python",
+              "type": "url",
+              "url": "https://www.python.org/"
+            }
+          ]
+        }
+      ],
+      "name": "Bookmarks bar",
+      "type": "folder"
+    },
+    "other": {
+      "children": [],
+      "name": "Other bookmarks",
+      "type": "folder"
+    }
+    
+  }
+}
