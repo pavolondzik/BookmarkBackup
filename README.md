@@ -42,16 +42,16 @@ The API container sets `DATABASE_URL` to reach Postgres on the internal hostname
 **Start the full stack:**
 
 ```powershell
-docker compose up -d --build
+docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d --build
 ```
 
 **Useful commands:**
 
 ```powershell
-docker compose ps
-docker compose logs -f api web
-docker compose up -d --build api web   # API + UI only (if db is already running)
-docker compose down
+docker compose -f docker/docker-compose.yml -p bookmarkbackup ps
+docker compose -f docker/docker-compose.yml -p bookmarkbackup logs -f api web
+docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d --build api web
+docker compose -f docker/docker-compose.yml -p bookmarkbackup down
 ```
 
 Open http://127.0.0.1:5173 for the UI. Check the API at http://127.0.0.1:8000/health.
@@ -62,7 +62,7 @@ Open http://127.0.0.1:5173 for the UI. Check the API at http://127.0.0.1:8000/he
 DATABASE_URL=postgresql+psycopg://pavol:bookmark@localhost:5430/bookmark_backup
 ```
 
-Docker files: [`docker-compose.yml`](docker-compose.yml), root [`Dockerfile`](Dockerfile), [`frontend/Dockerfile`](frontend/Dockerfile).
+Docker files: [`docker/docker-compose.yml`](docker/docker-compose.yml), [`docker/Dockerfile`](docker/Dockerfile) (API), [`docker/Dockerfile.web`](docker/Dockerfile.web) (Vite dev).
 
 ## Quick start
 
@@ -85,20 +85,20 @@ Create a `.env` file in the repo root with the database URL. Use port **5430** w
 DATABASE_URL=postgresql+psycopg://pavol:bookmark@localhost:5430/bookmark_backup
 ```
 
-If you use `docker compose up` for the full stack, the **api** service runs migrations automatically on startup. For local-only API development, run migrations yourself (step 4).
+If you use `docker compose -f docker/docker-compose.yml up` for the full stack, the **api** service runs migrations automatically on startup. For local-only API development, run migrations yourself (step 4).
 
 ### 3. Start PostgreSQL
 
 Database only:
 
 ```powershell
-docker compose up -d db
+docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d db
 ```
 
 Or start the full containerized stack (database + API + React UI):
 
 ```powershell
-docker compose up -d --build
+docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d --build
 ```
 
 When using the full stack, skip steps 4 and the separate dev servers in step 6 — open http://127.0.0.1:5173 instead.
@@ -135,7 +135,7 @@ The left sidebar shows the **folder + bookmark tree** with drag-and-drop move, r
 
 #### Development (recommended)
 
-**Docker:** `docker compose up -d --build` runs API and Vite with hot reload (see [Docker](#docker-containerized-stack)).
+**Docker:** `docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d --build` runs API and Vite with hot reload (see [Docker](#docker-containerized-stack)).
 
 **Local:** Run the API and frontend separately on the host. Changes hot-reload; no production build is required.
 
@@ -257,9 +257,10 @@ bookmark-backup serve --reload --port 8000
 ## Project layout
 
 ```
-docker-compose.yml     # bookmarkbackup project: db, api, web
-Dockerfile             # FastAPI image
-frontend/Dockerfile    # Vite dev image
+docker/
+  docker-compose.yml   # bookmarkbackup project: db, api, web
+  Dockerfile           # FastAPI image
+  Dockerfile.web       # Vite dev image
 src/bookmark_backup/
   importers/             # JSON + HTML extract
   services/              # dedupe + import

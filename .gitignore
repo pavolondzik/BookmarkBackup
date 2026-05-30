@@ -30,3 +30,6 @@ frontend/dist/
 # Debugging
 .env
 .env.example
+
+docker/
+**/.dockerignore

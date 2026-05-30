@@ -7,8 +7,11 @@ from fastapi.staticfiles import StaticFiles
 
 from bookmark_backup import __version__
 from bookmark_backup.web.api import router as api_router
+from bookmark_backup.web.frontend_paths import resolve_frontend_dist
 
-FRONTEND_DIST = Path(__file__).resolve().parents[3] / "frontend" / "dist"
+FRONTEND_DIST = resolve_frontend_dist() or (
+    Path(__file__).resolve().parents[3] / "frontend" / "dist"
+)
 
 app = FastAPI(
     title="Bookmark Backup",
