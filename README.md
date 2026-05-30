@@ -24,11 +24,49 @@ Re-importing the same bookmarks skips rows that already exist (unique index on `
 
 ## Requirements
 
-- Python 3.11+
-- Node.js 18+ and npm (to build the React frontend)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for local PostgreSQL)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — runs the **containerized** database, API, and React dev server (see [Docker](#docker-containerized-stack))
+- **For local (non-Docker) development and CLI:** Python 3.11+, Node.js 18+ and npm
+
+## Docker (containerized stack)
+
+PostgreSQL, FastAPI, and the React UI run as Docker Compose services under the project name **`bookmarkbackup`**. Container names look like `bookmarkbackup-db-1`, `bookmarkbackup-api-1`, and `bookmarkbackup-web-1`.
+
+| Service | Container | Host URL |
+|---------|-----------|----------|
+| `db` | Postgres 16 | `localhost:5430` (maps to 5432 in the container) |
+| `api` | FastAPI + Alembic on startup | http://127.0.0.1:8000 |
+| `web` | Vite dev server (hot reload) | http://127.0.0.1:5173 |
+
+The API container sets `DATABASE_URL` to reach Postgres on the internal hostname `db`. The web container proxies `/api` and `/health` to `http://api:8000`. Source mounts enable hot reload for `src/` and `frontend/` without rebuilding images on every edit.
+
+**Start the full stack:**
+
+```powershell
+docker compose up -d --build
+```
+
+**Useful commands:**
+
+```powershell
+docker compose ps
+docker compose logs -f api web
+docker compose up -d --build api web   # API + UI only (if db is already running)
+docker compose down
+```
+
+Open http://127.0.0.1:5173 for the UI. Check the API at http://127.0.0.1:8000/health.
+
+**CLI and imports on the host:** `bookmark-backup` still runs on your machine (not in a container). Point `.env` at the published DB port:
+
+```env
+DATABASE_URL=postgresql+psycopg://pavol:bookmark@localhost:5430/bookmark_backup
+```
+
+Docker files: [`docker-compose.yml`](docker-compose.yml), root [`Dockerfile`](Dockerfile), [`frontend/Dockerfile`](frontend/Dockerfile).
 
 ## Quick start
+
+Choose **Docker** (above) for the easiest full stack, or follow the steps below for a local Python/Node setup.
 
 ### 1. Virtual environment and install
 
@@ -41,15 +79,33 @@ pip install -e ".[dev]"
 
 ### 2. Environment
 
-It is required to set connection to database in file `.env`.
+Create a `.env` file in the repo root with the database URL. Use port **5430** when Postgres runs via Docker Compose (see [Docker](#docker-containerized-stack)):
+
+```env
+DATABASE_URL=postgresql+psycopg://pavol:bookmark@localhost:5430/bookmark_backup
+```
+
+If you use `docker compose up` for the full stack, the **api** service runs migrations automatically on startup. For local-only API development, run migrations yourself (step 4).
 
 ### 3. Start PostgreSQL
 
+Database only:
+
 ```powershell
-docker compose up -d
+docker compose up -d db
 ```
 
+Or start the full containerized stack (database + API + React UI):
+
+```powershell
+docker compose up -d --build
+```
+
+When using the full stack, skip steps 4 and the separate dev servers in step 6 — open http://127.0.0.1:5173 instead.
+
 ### 4. Run migrations
+
+Required when running the API **outside** Docker (local venv or VS Code debug). Skip if the `api` container is already running — it runs `alembic upgrade head` on start.
 
 ```powershell
 alembic upgrade head
@@ -79,7 +135,9 @@ The left sidebar shows the **folder + bookmark tree** with drag-and-drop move, r
 
 #### Development (recommended)
 
-Run the API and frontend separately. Changes hot-reload; no production build is required.
+**Docker:** `docker compose up -d --build` runs API and Vite with hot reload (see [Docker](#docker-containerized-stack)).
+
+**Local:** Run the API and frontend separately on the host. Changes hot-reload; no production build is required.
 
 Terminal 1 — API:
 
@@ -199,6 +257,9 @@ bookmark-backup serve --reload --port 8000
 ## Project layout
 
 ```
+docker-compose.yml     # bookmarkbackup project: db, api, web
+Dockerfile             # FastAPI image
+frontend/Dockerfile    # Vite dev image
 src/bookmark_backup/
   importers/             # JSON + HTML extract
   services/              # dedupe + import
