@@ -27,41 +27,6 @@ Re-importing the same bookmarks skips rows that already exist (unique index on `
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) — runs the **containerized** database, API, and React dev server (see [Docker](#docker-containerized-stack))
 - **For local (non-Docker) development and CLI:** Python 3.11+, Node.js 18+ and npm
 
-## Docker (containerized stack)
-
-PostgreSQL, FastAPI, and the React UI run as Docker Compose services under the project name **`bookmarkbackup`**. Container names look like `bookmarkbackup-db-1`, `bookmarkbackup-api-1`, and `bookmarkbackup-web-1`.
-
-| Service | Container | Host URL |
-|---------|-----------|----------|
-| `db` | Postgres 16 | `localhost:5430` (maps to 5432 in the container) |
-| `api` | FastAPI + Alembic on startup | http://127.0.0.1:8000 |
-| `web` | Vite dev server (hot reload) | http://127.0.0.1:5173 |
-
-The API container sets `DATABASE_URL` to reach Postgres on the internal hostname `db`. The web container proxies `/api` and `/health` to `http://api:8000`. Source mounts enable hot reload for `src/` and `frontend/` without rebuilding images on every edit.
-
-**Start the full stack:**
-
-```powershell
-docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d --build
-```
-
-**Useful commands:**
-
-```powershell
-docker compose -f docker/docker-compose.yml -p bookmarkbackup ps
-docker compose -f docker/docker-compose.yml -p bookmarkbackup logs -f api web
-docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d --build api web
-docker compose -f docker/docker-compose.yml -p bookmarkbackup down
-```
-
-Open http://127.0.0.1:5173 for the UI. Check the API at http://127.0.0.1:8000/health.
-
-**CLI and imports on the host:** `bookmark-backup` still runs on your machine (not in a container). Point `.env` at the published DB port:
-
-```env
-DATABASE_URL=postgresql+psycopg://pavol:bookmark@localhost:5430/bookmark_backup
-```
-
 Docker files: [`docker/docker-compose.yml`](docker/docker-compose.yml), [`docker/Dockerfile`](docker/Dockerfile) (API), [`docker/Dockerfile.web`](docker/Dockerfile.web) (Vite dev).
 
 ## Quick start
