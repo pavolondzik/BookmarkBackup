@@ -254,7 +254,7 @@ export function BookmarkTree({
             Folders & bookmarks
           </h2>
           <p className="m-0 text-xs text-muted">
-            Drag onto a folder to move; onto a bookmark to reorder. ✎ rename, ✕
+            Drag onto a folder to move; onto a bookmark to reorder. <br/>✎ rename, ✕
             delete.
           </p>
           <div className="mt-2 flex gap-1.5">
@@ -289,7 +289,7 @@ export function BookmarkTree({
           <div
             ref={rootDropRef}
             className={[
-              "min-h-[200px] overflow-anchor-none rounded-lg border border-dashed border-transparent p-1",
+              "min-h-50 overflow-anchor-none rounded-lg border border-dashed border-transparent p-1",
               rootIsOver && "tree-drop-root-active",
             ]
               .filter(Boolean)

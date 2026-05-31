@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from bookmark_backup.db.models import Bookmark, Folder
@@ -16,7 +15,7 @@ from bookmark_backup.web.schemas import (
     TreeNodeOut,
     UserOut,
 )
-from bookmark_backup.web.frontend_paths import frontend_path_debug_info
+
 from bookmark_backup.web.tree_service import (
     build_tree,
     get_latest_export_id,
@@ -27,12 +26,6 @@ from bookmark_backup.web.tree_service import (
 )
 
 router = APIRouter(prefix="/api")
-
-
-@router.get("/frontend-path")
-def api_frontend_path() -> dict[str, str | bool | None]:
-    """Temporary: where the app finds frontend/ and frontend/dist on disk."""
-    return frontend_path_debug_info()
 
 
 @router.post("/import", response_model=ImportResultOut)

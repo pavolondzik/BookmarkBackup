@@ -9,9 +9,10 @@ from bookmark_backup import __version__
 from bookmark_backup.web.api import router as api_router
 from bookmark_backup.web.frontend_paths import resolve_frontend_dist
 
-FRONTEND_DIST = resolve_frontend_dist() or (
-    Path(__file__).resolve().parents[3] / "frontend" / "dist"
-)
+FRONTEND_NOT_BUILT_MESSAGE = "Frontend not built. Run: cd frontend && npm install && npm run build"
+
+LOCAL_FRONTEND_DIST = Path(__file__).resolve().parents[3] / "frontend" / "dist"
+FRONTEND_DIST = resolve_frontend_dist() or LOCAL_FRONTEND_DIST
 
 app = FastAPI(
     title="Bookmark Backup",
@@ -29,22 +30,24 @@ app.add_middleware(
 
 app.include_router(api_router)
 
-if (FRONTEND_DIST / "assets").is_dir():
+if FRONTEND_DIST and (FRONTEND_DIST / "assets").is_dir():
     app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
 
 
 @app.get("/")
 def root():
+    if FRONTEND_DIST is None:
+        return JSONResponse(
+            status_code=503,
+            content= { "detail": FRONTEND_NOT_BUILT_MESSAGE },
+        )
+
     index = FRONTEND_DIST / "index.html"
     if index.is_file():
         return FileResponse(index)
     return JSONResponse(
         status_code=503,
-        content={
-            "detail": (
-                "Frontend not built. Run: cd frontend && npm install && npm run build"
-            ),
-        },
+        content= { "detail": FRONTEND_NOT_BUILT_MESSAGE },
     )
 
 

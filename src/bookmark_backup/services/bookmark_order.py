@@ -54,10 +54,3 @@ def reorder_bookmark(
 
     if old_folder_id != target_folder_id:
         reindex_folder(session, old_folder_id)
-
-
-def next_sort_index(session: Session, folder_id: int | None) -> int:
-    siblings = _siblings_in_folder(session, folder_id)
-    if not siblings:
-        return 0
-    return max(bookmark.sort_index for bookmark in siblings) + 1

@@ -49,20 +49,3 @@ def resolve_frontend_dist() -> Path | None:
     if (dist / "index.html").is_file():
         return dist
     return None
-
-
-def frontend_path_debug_info() -> dict[str, str | bool | None]:
-    """Payload for the temporary diagnostics endpoint."""
-    frontend = find_frontend_dir()
-    dist = resolve_frontend_dist()
-    legacy = Path(__file__).resolve().parents[3] / "frontend"
-    dist_legacy = legacy / "dist"
-    return {
-        "cwd": str(Path.cwd().resolve()),
-        "app_file": str(Path(__file__).resolve()),
-        "frontend_dir": str(frontend) if frontend else None,
-        "frontend_dist_dir": str(dist) if dist else None,
-        "dist_index_exists": bool(dist and (dist / "index.html").is_file()),
-        "legacy_parents3_frontend": str(legacy.resolve()),
-        "legacy_dist_index_exists": (dist_legacy / "index.html").is_file(),
-    }

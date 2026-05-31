@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Docker: Build images (bookmarkbackup)",
+      "type": "shell",
+      "command": "docker compose -f docker/docker-compose.yml -p bookmarkbackup build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Up (bookmarkbackup) - build & run",
+      "type": "shell",
+      "command": "docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d --build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Down (bookmarkbackup)",
+      "type": "shell",
+      "command": "docker compose -f docker/docker-compose.yml -p bookmarkbackup down",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
