@@ -1,14 +1,22 @@
 # Bookmark Backup
 
-Small **ETL pipeline** for removing duplicate browser bookmarks.  import from Chromium JSON files and exported HTML, deduplicate by normalized URL, store in **PostgreSQL**, and browse/import via a simple **FastAPI** web UI.
+Bookmark Backup is a small ETL pipeline with a FastAPI backend and web UI for importing, normalizing, and deduplicating browser bookmarks.
 
 
 ## Architecture
 
-```
-JSON/HTML bookmark files  →  Importers  →  normalize_url()  →  PostgreSQL
-                                                      ↘      ↘ Folder tree
-                                                        FastAPI web UI
+```text
+JSON/HTML bookmark files
+            ↓
+         Importers
+            ↓
+      normalize_url()
+            ↓
+       PostgreSQL
+            ↓
+       Folder tree
+            ↓
+     FastAPI web UI
 ```
 
 **Deduplication rules** (`normalize_url`):
@@ -79,7 +87,7 @@ alembic upgrade head
 
 ### 5. Import bookmarks (CLI)
 
-Close the browser first (or copy the `Bookmarks` file elsewhere and pass `--path`), then run one of the import commands below. See [CLI reference](#cli-bookmark-backup) for all commands, options, and how the CLI compares to the web UI.
+Close the browser first (or copy the `Bookmarks` file elsewhere and pass `--path`), then run one of the import commands below.
 
 ```powershell
 bookmark-backup import-chrome
@@ -99,7 +107,7 @@ The left sidebar shows the **folder + bookmark tree** with drag-and-drop move, r
 
 #### Development (recommended)
 
-**Docker:** `docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d --build` runs API and Vite with hot reload (see [Docker](#docker-containerized-stack)).
+**Docker:** `docker compose -f docker/docker-compose.yml -p bookmarkbackup up -d --build` runs API and Vite with hot reload.
 
 **Local:** Run the API and frontend separately on the host. Changes hot-reload; no production build is required.
 
