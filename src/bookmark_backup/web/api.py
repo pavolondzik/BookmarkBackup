@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, Request, Response, status
 from sqlalchemy.orm import Session
 
-from bookmark_backup.db.models import Bookmark, Folder
+from bookmark_backup.db.models import Bookmark, Folder, User
 from bookmark_backup.db.session import get_db
 from bookmark_backup.services.bookmark_order import reindex_folder, reorder_bookmark
 from bookmark_backup.web.import_handlers import run_import
@@ -24,6 +24,7 @@ from bookmark_backup.web.tree_service import (
     list_exports,
     list_users,
 )
+from bookmark_backup.services.authentication_service import AuthenticationService
 
 router = APIRouter(prefix="/api")
 
@@ -48,6 +49,55 @@ async def api_import_bookmarks(
 @router.get("/users", response_model=list[UserOut])
 def api_list_users(db: Session = Depends(get_db)) -> list[UserOut]:
     return list_users(db)
+
+
+@router.get("/me", response_model=UserOut)
+def api_get_current_user(request: Request, db: Session = Depends(get_db)) -> UserOut:
+    """Return the currently signed-in user based on cookie or Authorization header.
+
+    Looks for cookie `user_email` first, then `Authorization: Bearer <email>`.
+    """
+    email = request.cookies.get("user_email")
+    if not email:
+        auth = request.headers.get("Authorization", "")
+        if auth.startswith("Bearer "):
+            email = auth.split(" ", 1)[1]
+    if not email:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    users = list_users(db)
+    match = next((u for u in users if u.email == email), None)
+    if not match:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    return match
+
+
+@router.post("/logout", status_code=204)
+def api_logout(response: Response) -> Response:
+    response.delete_cookie("user_email")
+    return response
+
+
+@router.post("/login", response_model=UserOut)
+def api_login(
+    payload: dict,
+    response: Response,
+    db: Session = Depends(get_db),
+) -> UserOut:
+    """Authenticate user and set an httponly cookie `user_email` on success.
+
+    Expects JSON body: { "email": "...", "password": "..." }
+    """
+    email = payload.get("email")
+    password = payload.get("password")
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Missing credentials")
+    auth = AuthenticationService(db)
+    user = auth.login(email, password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    # Set a simple identifying cookie; in production use secure session or token
+    response.set_cookie("user_email", user.email, path="/", httponly=True, max_age=60 * 60 * 24 * 7)
+    return UserOut(id=user.id, email=user.email)
 
 
 @router.get("/devices", response_model=list[DeviceOut])

@@ -9,7 +9,8 @@ import type {
 
 const API = "/api";
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, init);
+  const mergedInit: RequestInit = { credentials: "include", ...init };
+  const response = await fetch(url, mergedInit);
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || `Request failed: ${response.status}`);
@@ -30,6 +31,19 @@ export function fetchExports(): Promise<ExportInfo[]> {
 }
 export function fetchUsers(): Promise<UserInfo[]> {
   return request(`${API}/users`);
+}
+export function fetchMe(): Promise<UserInfo> {
+  return request(`${API}/me`);
+}
+export function fetchLogout(): Promise<void> {
+  return request(`${API}/logout`, { method: "POST" });
+}
+export function login(email: string, password: string): Promise<UserInfo> {
+  return request(`${API}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
 }
 export function fetchDevices(userId: number): Promise<DeviceInfo[]> {
   return request(`${API}/devices?user_id=${userId}`);

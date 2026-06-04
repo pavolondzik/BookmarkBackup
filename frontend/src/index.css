@@ -234,6 +234,23 @@
     @apply size-7 animate-spin rounded-full border-[3px] border-accent/25 border-t-accent border-r-accent;
   }
 
+  /* Login screen background images per theme */
+  .login-bg {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 100% 100%;
+  }
+
+  /* Dark and Light specific images (images live in src/assets)
+     Use background-size: 100% 100% to stretch the image to fill. */
+  [data-theme="dark"] .login-bg {
+    background-image: url("./assets/LoginScreenBackground_Dark_1.png");
+  }
+
+  [data-theme="light"] .login-bg {
+    background-image: url("./assets/LoginScreenBackground_Light_1.png");
+  }
+
   .children-enter {
     animation: treeChildrenIn 0.18s ease-out;
     transform-origin: top;

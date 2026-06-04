@@ -16,7 +16,8 @@ class AuthorizationService:
         """Check if the user has a specific permission."""
         for role in user.roles:
             for permission in role.permissions:
-                return permission.module.name == module_name and permission.action == action
+                if permission.module.name == module_name and permission.action == action:
+                    return True
         return False
 
     def check_access(self, user: User, module_name: str, action: str) -> None:

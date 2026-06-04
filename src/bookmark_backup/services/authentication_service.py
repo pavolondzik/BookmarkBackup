@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from bookmark_backup.db.models import Role, SystemRole, User
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 def hash_password(password: str) -> str:

@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Bookmark Backup API",
-      "type": "debugpy",
+      "type": "python",
       "request": "launch",
       "module": "uvicorn",
       "args": [
@@ -18,14 +18,18 @@
       "envFile": "${workspaceFolder}/.env",
       "env": {
         "PYTHONPATH": "${workspaceFolder}/src"
-      }
+      },
+      "console": "integratedTerminal",
+      "justMyCode": false
     },
     {
       "name": "Frontend (Vite)",
-      "type": "node-terminal",
+      "type": "pwa-node",
       "request": "launch",
-      "command": "npm run dev",
-      "cwd": "${workspaceFolder}/frontend"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal"
     }
   ],
   "compounds": [
