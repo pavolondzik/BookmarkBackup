@@ -1,13 +1,23 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import StrEnum
 
 from sqlalchemy import DateTime, Index, String, Text, func, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-
 class Base(DeclarativeBase):
     pass
+
+class SystemRole(StrEnum):
+    ADMINISTRATOR = "Administrator"
+    EDITOR = "Editor"
+    VIEWER = "Viewer"
+
+class SystemModule(StrEnum):
+    BOOKMARKS = "Bookmarks"
+    FOLDERS = "Folders"
+    ADMINISTRATION = "Administration"
 
 
 class User(Base):
@@ -17,6 +27,60 @@ class User(Base):
     devices: Mapped[list["Device"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
+    )
+    roles: Mapped[list["Role"]] = relationship(
+        secondary="userroles",
+        back_populates="users",
+    )
+    password: Mapped[str] = mapped_column(String(255), nullable=True)
+    previous_password: Mapped[str] = mapped_column(String(255), nullable=True)
+
+class UserRole(Base):
+    __tablename__ = "userroles"
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), primary_key=True)
+
+class Role(Base):
+    __tablename__ = "roles"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    users: Mapped[list["User"]] = relationship(
+        secondary="userroles",
+        back_populates="roles",
+    )
+    permissions: Mapped[list["Permission"]] = relationship(
+        secondary="rolepermissions",
+        back_populates="roles",
+    )
+
+class Module(Base):
+    __tablename__ = "modules"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)  # e.g. "bookmarks"
+    description: Mapped[str | None] = mapped_column(String(255))
+
+    permissions: Mapped[list["Permission"]] = relationship(back_populates="module", cascade="all, delete-orphan")
+
+class RolePermission(Base):
+    __tablename__ = "rolepermissions"
+    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), primary_key=True)
+    permission_id: Mapped[int] = mapped_column(ForeignKey("permissions.id"), primary_key=True)
+
+class Permission(Base):
+    __tablename__ = "permissions"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    module_id: Mapped[int] = mapped_column(ForeignKey("modules.id"), nullable=False)  
+    action: Mapped[str] = mapped_column(String(50), nullable=False)  # e.g. "import", "delete"
+    description: Mapped[str | None] = mapped_column(String(255))
+
+    module: Mapped["Module"] = relationship(back_populates="permissions")
+    roles: Mapped[list["Role"]] = relationship(
+        secondary="rolepermissions",
+        back_populates="permissions",
+    )
+
+    __table_args__ = (
+        Index("ix_permissions_module_action", "module_id", "action", unique=True),
     )
 
 class Device(Base):

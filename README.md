@@ -30,6 +30,7 @@ JSON/HTML bookmark files
 
 Re-importing the same bookmarks skips rows that already exist (unique index on `href_normalized`).
 
+
 ## Requirements
 
 - Python 3.11+
@@ -41,6 +42,11 @@ Re-importing the same bookmarks skips rows that already exist (unique index on `
 
 For VS Code run/debug instructions, see [`README_VSCODE.md`](README_VSCODE.md)
 Docker is optional for local containerized development; follow the steps below for a local Python/Node setup.
+
+### App entry point
+
+- **Web Application (FastAPI):** `src/bookmark_backup/web/app.py`
+- **Command Line Interface (CLI):** `src/bookmark_backup/cli.py`
 
 ### 1. Virtual environment and install
 

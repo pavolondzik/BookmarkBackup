@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -6,6 +7,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from bookmark_backup import __version__
+from bookmark_backup.db import SessionLocal, seed_permissions
 from bookmark_backup.web.api import router as api_router
 from bookmark_backup.web.frontend_paths import resolve_frontend_dist
 
@@ -14,10 +16,17 @@ FRONTEND_NOT_BUILT_MESSAGE = "Frontend not built. Run: cd frontend && npm instal
 LOCAL_FRONTEND_DIST = Path(__file__).resolve().parents[3] / "frontend" / "dist"
 FRONTEND_DIST = resolve_frontend_dist() or LOCAL_FRONTEND_DIST
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    with SessionLocal() as session:
+        seed_permissions(session)
+    yield
+
 app = FastAPI(
     title="Bookmark Backup",
     description="Unified bookmark storage with deduplication",
     version=__version__,
+    lifespan=lifespan,
 )
 
 app.add_middleware(

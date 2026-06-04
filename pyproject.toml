@@ -17,6 +17,8 @@ dependencies = [
     "sqlalchemy>=2.0",
     "typer>=0.15",
     "uvicorn[standard]>=0.32",
+    "passlib>=1.7.4",
+    "bcrypt">=5.0.0",
 ]
 
 [project.optional-dependencies]
