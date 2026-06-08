@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ThemeSwitcher } from "./theme/ThemeSwitcher";
-import { login } from "./api/client";
+import { login, register } from "./api/client";
 import {
   btnPrimaryClass,
   btnSecondaryClass,
@@ -12,18 +12,48 @@ import {
 export default function AuthPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+
+  const hasAtLeastTwoLetters = (value: string) =>
+    [...value].filter((char) => /[A-Za-z]/.test(char)).length >= 2;
+
+  const isValidEmail = (value: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(email, password);
+      if (isRegistering) {
+        if (!isValidEmail(email)) {
+          alert("Please enter a valid email address.");
+          return;
+        }
+        if (!hasAtLeastTwoLetters(firstName)) {
+          alert("First name must contain at least two letters.");
+          return;
+        }
+        if (!hasAtLeastTwoLetters(lastName)) {
+          alert("Last name must contain at least two letters.");
+          return;
+        }
+        if (password !== confirmPassword) {
+          alert("Passwords do not match.");
+          return;
+        }
+
+        await register(email, password, confirmPassword, firstName, lastName);
+      } else {
+        await login(email, password);
+      }
+
       navigate("/dashboard");
     } catch (err) {
-      // naive error feedback — in future show UI
-      console.error("Login failed", err);
-      alert("Login failed");
+      console.error("Authentication failed", err);
+      alert(isRegistering ? "Registration failed" : "Login failed");
     }
   };
 
@@ -54,6 +84,32 @@ export default function AuthPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </label>
+          {isRegistering && (
+            <>
+              <label className={labelClass}>
+                First name
+                <input
+                  type="text"
+                  required
+                  className={inputClass}
+                  placeholder="First name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+              </label>
+              <label className={labelClass}>
+                Last name
+                <input
+                  type="text"
+                  required
+                  className={inputClass}
+                  placeholder="Last name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </label>
+            </>
+          )}
           <label className={labelClass}>
             Password
             <input
@@ -65,6 +121,19 @@ export default function AuthPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
+          {isRegistering && (
+            <label className={labelClass}>
+              Confirm password
+              <input
+                type="password"
+                required
+                className={inputClass}
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </label>
+          )}
 
           <div className="mt-2 flex flex-col gap-3">
             <button type="submit" className={btnPrimaryClass}>

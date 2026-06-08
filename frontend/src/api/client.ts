@@ -45,6 +45,25 @@ export function login(email: string, password: string): Promise<UserInfo> {
     body: JSON.stringify({ email, password }),
   });
 }
+export function register(
+  email: string,
+  password: string,
+  confirmPassword: string,
+  firstName: string,
+  lastName: string,
+): Promise<UserInfo> {
+  return request(`${API}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email,
+      password,
+      confirm_password: confirmPassword,
+      first_name: firstName,
+      last_name: lastName,
+    }),
+  });
+}
 export function fetchDevices(userId: number): Promise<DeviceInfo[]> {
   return request(`${API}/devices?user_id=${userId}`);
 }

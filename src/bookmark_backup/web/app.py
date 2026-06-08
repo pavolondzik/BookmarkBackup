@@ -11,10 +11,43 @@ from bookmark_backup.db import SessionLocal, seed_permissions
 from bookmark_backup.web.api import router as api_router
 from bookmark_backup.web.frontend_paths import resolve_frontend_dist
 
-FRONTEND_NOT_BUILT_MESSAGE = "Frontend not built. Run: cd frontend && npm install && npm run build"
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
+from fastapi import Request
 
+FRONTEND_NOT_BUILT_MESSAGE = "Frontend not built. Run: cd frontend && npm install && npm run build"
 LOCAL_FRONTEND_DIST = Path(__file__).resolve().parents[3] / "frontend" / "dist"
 FRONTEND_DIST = resolve_frontend_dist() or LOCAL_FRONTEND_DIST
+
+
+class AuthenticationMiddleware(BaseHTTPMiddleware):
+    """Middleware to protect all API routes except /login and /register."""
+    UNPROTECTED_PATHS = {"/api/login", "/api/register"}
+
+    async def dispatch(self, request: Request, call_next):
+        # Skip protection for unprotected paths
+        if request.url.path in self.UNPROTECTED_PATHS:
+            return await call_next(request)
+        
+        # Skip protection for non-API routes (like static files, root, etc.)
+        if not request.url.path.startswith("/api"):
+            return await call_next(request)
+        
+        # Check for authentication
+        email = request.cookies.get("user_email")
+        if not email:
+            auth = request.headers.get("Authorization", "")
+            if auth.startswith("Bearer "):
+                email = auth.split(" ", 1)[1]
+        
+        if not email:
+            return Response(
+                content='{"detail":"Not authenticated"}',
+                status_code=401,
+                media_type="application/json"
+            )
+        
+        return await call_next(request)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,6 +71,8 @@ app.add_middleware(
 )
 
 app.include_router(api_router)
+
+app.add_middleware(AuthenticationMiddleware)
 
 if FRONTEND_DIST and (FRONTEND_DIST / "assets").is_dir():
     app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")

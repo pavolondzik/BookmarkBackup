@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, Request, Response, status
+from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy.orm import Session
 
 from bookmark_backup.db.models import Bookmark, Folder, User
 from bookmark_backup.db.session import get_db
+from bookmark_backup.services.authentication_service import AuthenticationService
 from bookmark_backup.services.bookmark_order import reindex_folder, reorder_bookmark
 from bookmark_backup.web.import_handlers import run_import
 from bookmark_backup.web.schemas import (
@@ -24,7 +26,6 @@ from bookmark_backup.web.tree_service import (
     list_exports,
     list_users,
 )
-from bookmark_backup.services.authentication_service import AuthenticationService
 
 router = APIRouter(prefix="/api")
 
@@ -77,6 +78,34 @@ def api_logout(response: Response) -> Response:
     return response
 
 
+class RegisterPayload(BaseModel):
+    email: EmailStr
+    password: str
+    confirm_password: str
+    first_name: str
+    last_name: str
+
+    @field_validator("first_name", "last_name")
+    def must_have_two_letters(cls, value: str) -> str:
+        trimmed = value.strip()
+        letter_count = sum(1 for char in trimmed if char.isalpha())
+        if letter_count < 2:
+            raise ValueError("Must contain at least two letters")
+        return trimmed
+
+    @field_validator("password")
+    def password_not_empty(cls, value: str) -> str:
+        if not value:
+            raise ValueError("Password cannot be empty")
+        return value
+
+    @field_validator("confirm_password")
+    def confirm_password_not_empty(cls, value: str) -> str:
+        if not value:
+            raise ValueError("Password confirmation cannot be empty")
+        return value
+
+
 @router.post("/login", response_model=UserOut)
 def api_login(
     payload: dict,
@@ -95,9 +124,42 @@ def api_login(
     user = auth.login(email, password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    # Set a simple identifying cookie; in production use secure session or token
     response.set_cookie("user_email", user.email, path="/", httponly=True, max_age=60 * 60 * 24 * 7)
-    return UserOut(id=user.id, email=user.email)
+    return UserOut(
+        id=user.id,
+        email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+    )
+
+
+@router.post("/register", response_model=UserOut)
+def api_register(
+    payload: RegisterPayload,
+    response: Response,
+    db: Session = Depends(get_db),
+) -> UserOut:
+    if payload.password != payload.confirm_password:
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+
+    auth = AuthenticationService(db)
+    try:
+        user = auth.register_editor(
+            email=payload.email,
+            password=payload.password,
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    response.set_cookie("user_email", user.email, path="/", httponly=True, max_age=60 * 60 * 24 * 7)
+    return UserOut(
+        id=user.id,
+        email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+    )
 
 
 @router.get("/devices", response_model=list[DeviceOut])

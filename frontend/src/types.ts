@@ -28,6 +28,8 @@ export interface ExportInfo {
 export interface UserInfo {
   id: number;
   email: string;
+  first_name?: string | null;
+  last_name?: string | null;
 }
 export interface DeviceInfo {
   id: number;

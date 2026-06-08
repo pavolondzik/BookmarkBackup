@@ -7,7 +7,15 @@ from bookmark_backup.web.schemas import DeviceOut, ExportOut, TreeNodeOut, UserO
 
 def list_users(session: Session) -> list[UserOut]:
     users = session.scalars(select(User).order_by(User.email.asc())).all()
-    return [UserOut(id=user.id, email=user.email) for user in users]
+    return [
+        UserOut(
+            id=user.id,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+        )
+        for user in users
+    ]
 
 
 def list_devices(session: Session, user_id: int) -> list[DeviceOut]:

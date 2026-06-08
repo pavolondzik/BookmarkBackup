@@ -53,6 +53,7 @@ export default function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(380);
+  const [userEmail, setUserEmail] = useState("");
   const minSidebarWidth = 380;
   const resizingRef = useRef<{
     startX: number;
@@ -69,6 +70,7 @@ export default function Dashboard() {
       try {
         const currentUser = await fetchMe();
         setUserId(currentUser.id);
+        setUserEmail(currentUser.email);
         if (!currentUser.id) {
           setDevices([]);
           setExports([]);
@@ -484,7 +486,8 @@ export default function Dashboard() {
                       <input
                         className={inputClass}
                         name="user_email"
-                        defaultValue="local@bookmark-backup"
+                        value={userEmail}
+                        onChange={(e) => setUserEmail(e.target.value)}
                       />
                     </label>
                     <label className={labelClass}>

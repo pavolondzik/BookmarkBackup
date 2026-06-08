@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field
 class UserOut(BaseModel):
     id: int
     email: str
+    first_name: str | None = None
+    last_name: str | None = None
 
 
 class DeviceOut(BaseModel):

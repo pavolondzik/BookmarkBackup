@@ -1,27 +1,28 @@
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError, VerificationError, InvalidHashError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from bookmark_backup.db.models import Role, SystemRole, User
 
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
-
+pwd_context = PasswordHasher()
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
-
 def verify_password(plain_password: str, hashed_password: str | None) -> bool:
     if not hashed_password:
         return False
-    return pwd_context.verify(plain_password, hashed_password)
-
+    try:
+        return pwd_context.verify(hashed_password, plain_password)
+    except (VerifyMismatchError, VerificationError, InvalidHashError):
+        return False
 
 class AuthenticationService:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def register_editor(self, email: str, password: str) -> User:
+    def register_editor(self, email: str, password: str, first_name: str | None = None, last_name: str | None = None) -> User:
         """Register a new user with the Editor role."""
         if self.session.scalar(select(User).where(User.email == email)):
             raise ValueError(f"User with email {email} already exists.")
@@ -32,6 +33,8 @@ class AuthenticationService:
 
         user = User(
             email=email,
+            first_name=first_name.strip() if first_name else None,
+            last_name=last_name.strip() if last_name else None,
             password=hash_password(password),
         )
         if editor_role:
